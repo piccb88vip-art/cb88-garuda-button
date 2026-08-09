@@ -28,7 +28,7 @@
       z-index: 999999;
       right: 10px;
       top: 82%;
-      width: 155px;
+      width: 135px;
       height: auto;
       display: block;
       padding: 0;
@@ -133,7 +133,7 @@
         top: auto;
         right: 7px;
         bottom: calc(95px + env(safe-area-inset-bottom, 0px));
-        width: 105px;
+        width: 90px;
         transform: none;
       }
     }
