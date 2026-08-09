@@ -192,3 +192,83 @@
   document.head.appendChild(style);
   document.body.appendChild(button);
 })();
+(() => {
+  document.getElementById("cb81-force-animation")?.remove();
+
+  const forceStyle = document.createElement("style");
+  forceStyle.id = "cb81-force-animation";
+
+  forceStyle.textContent = `
+    @keyframes cb81SiteMotionFinal {
+      0%, 100% {
+        transform: translateY(0) rotate(-1deg) scale(1);
+        filter:
+          drop-shadow(0 5px 4px rgba(0,0,0,.58))
+          drop-shadow(0 0 4px rgba(255,185,30,.3));
+      }
+
+      50% {
+        transform: translateY(-9px) rotate(1deg) scale(1.025);
+        filter:
+          drop-shadow(0 7px 5px rgba(0,0,0,.65))
+          drop-shadow(0 0 11px rgba(255,194,40,.7))
+          brightness(1.08);
+      }
+    }
+
+    @keyframes cb81SiteSparkFinal {
+      0%, 100% {
+        opacity: 0;
+        transform: scale(.25) rotate(0deg);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1.25) rotate(90deg);
+      }
+    }
+  `;
+
+  document.head.appendChild(forceStyle);
+
+  function aktifkanAnimasi() {
+    const button = document.getElementById("cb81-premium-final");
+
+    if (!button) {
+      setTimeout(aktifkanAnimasi, 300);
+      return;
+    }
+
+    const image = button.querySelector("img");
+
+    // Matikan animasi container agar posisi tidak terganggu
+    button.style.setProperty("animation", "none", "important");
+
+    // Paksa gambar tetap bergerak meskipun CSS situs menimpanya
+    if (image) {
+      image.style.setProperty(
+        "animation",
+        "cb81SiteMotionFinal 3.3s ease-in-out infinite",
+        "important"
+      );
+
+      image.style.setProperty(
+        "animation-play-state",
+        "running",
+        "important"
+      );
+
+      image.style.setProperty(
+        "will-change",
+        "transform, filter",
+        "important"
+      );
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", aktifkanAnimasi);
+  } else {
+    aktifkanAnimasi();
+  }
+})();
