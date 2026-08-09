@@ -272,3 +272,21 @@
     aktifkanAnimasi();
   }
 })();
+(() => {
+  document.getElementById("cb81-mobile-position")?.remove();
+
+  const style = document.createElement("style");
+  style.id = "cb81-mobile-position";
+
+  style.textContent = `
+    @media (max-width: 600px) {
+      #cb81-premium-final {
+        top: auto !important;
+        right: 4px !important;
+        bottom: calc(95px + env(safe-area-inset-bottom, 0px)) !important;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
+})();
