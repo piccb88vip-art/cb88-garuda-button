@@ -26,8 +26,10 @@
     #cb81-premium-final {
       position: fixed;
       z-index: 999999;
-      right: 10px;
-      top: 82%;
+      left: auto !important;
+      right: 8px !important;
+      top: 65%;
+      bottom: auto;
       width: 120px;
       height: auto;
       display: block;
@@ -130,14 +132,55 @@
 
     @media (max-width: 600px) {
       #cb81-premium-final {
-        top: auto;
-        right: 7px;
-        bottom: calc(95px + env(safe-area-inset-bottom, 0px));
+        left: auto !important;
+        right: 4px !important;
+        top: 62%;
+        bottom: auto !important;
         width: 75px;
-        transform: none;
+        transform: translateY(-50%);
       }
     }
   `;
+
+  const GUEST_LABELS = new Set([
+    "MASUK",
+    "LOGIN",
+    "DAFTAR",
+    "REGISTER"
+  ]);
+
+  const normalizeLabel = value =>
+    String(value || "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toUpperCase();
+
+  const isVisible = element =>
+    Boolean(
+      element &&
+      (element.offsetWidth ||
+        element.offsetHeight ||
+        element.getClientRects().length)
+    );
+
+  const hasVisibleGuestControl = () =>
+    Array.from(
+      document.querySelectorAll('a, button, [role="button"]')
+    ).some(element => {
+      if (!isVisible(element)) return false;
+
+      const label = normalizeLabel(
+        element.textContent ||
+        element.getAttribute("aria-label") ||
+        element.getAttribute("title")
+      );
+
+      return GUEST_LABELS.has(label);
+    });
+
+  const isMemberLoggedIn = () =>
+    document.readyState === "complete" &&
+    !hasVisibleGuestControl();
 
   const button = document.createElement("a");
 
@@ -146,6 +189,7 @@
   button.target = "_blank";
   button.rel = "noopener noreferrer";
   button.title = "Main Merdeka Mini Games";
+  button.style.setProperty("display", "none", "important");
 
   button.setAttribute(
     "aria-label",
@@ -162,6 +206,39 @@
 
   document.head.appendChild(style);
   document.body.appendChild(button);
+
+  const syncButtonVisibility = () => {
+    button.style.setProperty(
+      "display",
+      isMemberLoggedIn() ? "block" : "none",
+      "important"
+    );
+  };
+
+  let visibilityTimer;
+
+  const scheduleVisibilityCheck = () => {
+    clearTimeout(visibilityTimer);
+    visibilityTimer = setTimeout(syncButtonVisibility, 150);
+  };
+
+  const loginStateObserver = new MutationObserver(
+    scheduleVisibilityCheck
+  );
+
+  loginStateObserver.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+    characterData: true
+  });
+
+  window.addEventListener("load", syncButtonVisibility, {
+    once: true
+  });
+
+  [500, 1200, 2500].forEach(delay => {
+    setTimeout(syncButtonVisibility, delay);
+  });
 
   const image = button.querySelector("img");
 
