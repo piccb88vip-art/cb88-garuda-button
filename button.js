@@ -179,7 +179,7 @@
     });
 
   const isMemberLoggedIn = () =>
-    document.readyState === "complete" &&
+    document.readyState !== "loading" &&
     !hasVisibleGuestControl();
 
   const button = document.createElement("a");
@@ -215,11 +215,16 @@
     );
   };
 
-  let visibilityTimer;
+  let visibilityFrame;
 
   const scheduleVisibilityCheck = () => {
-    clearTimeout(visibilityTimer);
-    visibilityTimer = setTimeout(syncButtonVisibility, 150);
+    if (visibilityFrame) {
+      cancelAnimationFrame(visibilityFrame);
+    }
+
+    visibilityFrame = requestAnimationFrame(
+      syncButtonVisibility
+    );
   };
 
   const loginStateObserver = new MutationObserver(
@@ -229,14 +234,27 @@
   loginStateObserver.observe(document.documentElement, {
     childList: true,
     subtree: true,
-    characterData: true
+    characterData: true,
+    attributes: true,
+    attributeFilter: [
+      "class",
+      "style",
+      "hidden",
+      "aria-hidden"
+    ]
   });
 
-  window.addEventListener("load", syncButtonVisibility, {
-    once: true
-  });
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      syncButtonVisibility,
+      { once: true }
+    );
+  } else {
+    syncButtonVisibility();
+  }
 
-  [500, 1200, 2500].forEach(delay => {
+  [50, 200, 500].forEach(delay => {
     setTimeout(syncButtonVisibility, delay);
   });
 
