@@ -206,24 +206,46 @@ const labelContainsKeyword = (label, keywords) => {
 };
 
 const hasVisibleGuestControl = () => {
+  const isMobile = window.matchMedia(
+    "(max-width: 600px)"
+  ).matches;
+
   const visibleLabels = Array.from(
     document.querySelectorAll(LOGIN_STATE_ELEMENTS)
   ).flatMap(element => {
     if (!isVisible(element)) return [];
 
+    // Khusus desktop, hanya periksa area header atas.
+    // Jadi teks LOGIN/DAFTAR di isi halaman tidak ikut terbaca.
+    if (!isMobile) {
+      const position = element.getBoundingClientRect();
+
+      if (position.top < 0 || position.top > 160) {
+        return [];
+      }
+    }
+
     return getElementLabels(element);
   });
 
-  const hasLoginButton = visibleLabels.some(label =>
-    labelContainsKeyword(label, LOGIN_LABELS)
-  );
+  const hasLoginButton = visibleLabels.some(label => {
+    if (isMobile) {
+      return labelContainsKeyword(label, LOGIN_LABELS);
+    }
 
-  const hasRegisterButton = visibleLabels.some(label =>
-    labelContainsKeyword(label, REGISTER_LABELS)
-  );
+    // Desktop harus sama persis: MASUK atau LOGIN
+    return LOGIN_LABELS.includes(label);
+  });
 
-  // Dianggap logout hanya jika tombol login dan daftar
-  // ditemukan secara bersamaan
+  const hasRegisterButton = visibleLabels.some(label => {
+    if (isMobile) {
+      return labelContainsKeyword(label, REGISTER_LABELS);
+    }
+
+    // Desktop harus sama persis: DAFTAR atau REGISTER
+    return REGISTER_LABELS.includes(label);
+  });
+
   return hasLoginButton && hasRegisterButton;
 };
 
