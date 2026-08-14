@@ -134,7 +134,7 @@
       #cb81-premium-final {
         left: auto !important;
         right: 4px !important;
-        top: 78%;
+        top: 76%;
         bottom: auto !important;
         width: 75px;
         transform: translateY(-50%);
@@ -142,9 +142,12 @@
     }
   `;
 
-  const GUEST_LABELS = [
+const LOGIN_LABELS = [
   "MASUK",
-  "LOGIN",
+  "LOGIN"
+];
+
+const REGISTER_LABELS = [
   "DAFTAR",
   "REGISTER"
 ];
@@ -202,16 +205,27 @@ const labelContainsKeyword = (label, keywords) => {
   );
 };
 
-const hasVisibleGuestControl = () =>
-  Array.from(
+const hasVisibleGuestControl = () => {
+  const visibleLabels = Array.from(
     document.querySelectorAll(LOGIN_STATE_ELEMENTS)
-  ).some(element => {
-    if (!isVisible(element)) return false;
+  ).flatMap(element => {
+    if (!isVisible(element)) return [];
 
-    return getElementLabels(element).some(label =>
-      labelContainsKeyword(label, GUEST_LABELS)
-    );
+    return getElementLabels(element);
   });
+
+  const hasLoginButton = visibleLabels.some(label =>
+    labelContainsKeyword(label, LOGIN_LABELS)
+  );
+
+  const hasRegisterButton = visibleLabels.some(label =>
+    labelContainsKeyword(label, REGISTER_LABELS)
+  );
+
+  // Dianggap logout hanya jika tombol login dan daftar
+  // ditemukan secara bersamaan
+  return hasLoginButton && hasRegisterButton;
+};
 
 const hasMemberLogoutControl = () => {
   const logoutElement = document.querySelector(
