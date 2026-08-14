@@ -134,7 +134,7 @@
       #cb81-premium-final {
         left: auto !important;
         right: 4px !important;
-        top: 62%;
+        top: 68%;
         bottom: auto !important;
         width: 75px;
         transform: translateY(-50%);
