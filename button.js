@@ -142,45 +142,110 @@
     }
   `;
 
-  const GUEST_LABELS = new Set([
-    "MASUK",
-    "LOGIN",
-    "DAFTAR",
-    "REGISTER"
-  ]);
+  const GUEST_LABELS = [
+  "MASUK",
+  "LOGIN",
+  "DAFTAR",
+  "REGISTER"
+];
 
-  const normalizeLabel = value =>
-    String(value || "")
-      .replace(/\s+/g, " ")
-      .trim()
-      .toUpperCase();
+const MEMBER_LABELS = [
+  "KELUAR",
+  "LOGOUT",
+  "LOG OUT"
+];
 
-  const isVisible = element =>
-    Boolean(
-      element &&
-      (element.offsetWidth ||
-        element.offsetHeight ||
-        element.getClientRects().length)
+const LOGIN_STATE_ELEMENTS = [
+  "a",
+  "button",
+  "input",
+  '[role="button"]',
+  "[onclick]",
+  "[tabindex]",
+  "span",
+  "label",
+  "img[alt]"
+].join(",");
+
+const normalizeLabel = value =>
+  String(value || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toUpperCase();
+
+const getElementLabels = element =>
+  [
+    element.textContent,
+    element.value,
+    element.getAttribute("aria-label"),
+    element.getAttribute("title"),
+    element.getAttribute("alt")
+  ]
+    .map(normalizeLabel)
+    .filter(label => label && label.length <= 50);
+
+const isVisible = element =>
+  Boolean(
+    element &&
+    (element.offsetWidth ||
+      element.offsetHeight ||
+      element.getClientRects().length)
+  );
+
+const labelContainsKeyword = (label, keywords) => {
+  const words = label.split(/[^A-Z0-9]+/).filter(Boolean);
+
+  return keywords.some(keyword =>
+    keyword.includes(" ")
+      ? label.includes(keyword)
+      : words.includes(keyword)
+  );
+};
+
+const hasVisibleGuestControl = () =>
+  Array.from(
+    document.querySelectorAll(LOGIN_STATE_ELEMENTS)
+  ).some(element => {
+    if (!isVisible(element)) return false;
+
+    return getElementLabels(element).some(label =>
+      labelContainsKeyword(label, GUEST_LABELS)
     );
+  });
 
-  const hasVisibleGuestControl = () =>
-    Array.from(
-      document.querySelectorAll('a, button, [role="button"]')
-    ).some(element => {
-      if (!isVisible(element)) return false;
+const hasMemberLogoutControl = () => {
+  const logoutElement = document.querySelector(
+    [
+      '[href*="logout"]',
+      '[href*="keluar"]',
+      '[id*="logout"]',
+      '[id*="keluar"]',
+      '[class*="logout"]',
+      '[class*="keluar"]',
+      '[data-action*="logout"]'
+    ].join(",")
+  );
 
-      const label = normalizeLabel(
-        element.textContent ||
-        element.getAttribute("aria-label") ||
-        element.getAttribute("title")
-      );
+  if (logoutElement) return true;
 
-      return GUEST_LABELS.has(label);
-    });
+  return Array.from(
+    document.querySelectorAll(LOGIN_STATE_ELEMENTS)
+  ).some(element =>
+    getElementLabels(element).some(label =>
+      labelContainsKeyword(label, MEMBER_LABELS)
+    )
+  );
+};
 
-  const isMemberLoggedIn = () =>
-    document.readyState !== "loading" &&
-    !hasVisibleGuestControl();
+const isMemberLoggedIn = () => {
+  if (document.readyState === "loading") return false;
+
+  // Kalau MASUK/LOGIN/DAFTAR terlihat, berarti masih logout
+  if (hasVisibleGuestControl()) return false;
+
+  // Button hanya muncul kalau KELUAR/LOGOUT ditemukan
+  return hasMemberLogoutControl();
+};
 
   const button = document.createElement("a");
 
