@@ -134,7 +134,7 @@
       #cb81-premium-final {
         left: auto !important;
         right: 4px !important;
-        top: 72%;
+        top: 78%;
         bottom: auto !important;
         width: 75px;
         transform: translateY(-50%);
@@ -240,11 +240,9 @@ const hasMemberLogoutControl = () => {
 const isMemberLoggedIn = () => {
   if (document.readyState === "loading") return false;
 
-  // Kalau MASUK/LOGIN/DAFTAR terlihat, berarti masih logout
-  if (hasVisibleGuestControl()) return false;
-
-  // Button hanya muncul kalau KELUAR/LOGOUT ditemukan
-  return hasMemberLogoutControl();
+  // Ada MASUK/LOGIN/DAFTAR = belum login
+  // Tidak ada = member sudah login
+  return !hasVisibleGuestControl();
 };
 
   const button = document.createElement("a");
